@@ -27,18 +27,18 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration._
 
 /**
- * Reliable receiver for a JMS source
- *
- * @param consumerFactory  Implementation specific factory for building MessageConsumer.
- *                         Use JndiMessageConsumerFactory to setup via JNDI
- * @param messageConverter Function to map from Message type to T. Return None to filter out
- *                         message
- * @param storageLevel
- * @tparam T
- */
+  * Reliable receiver for a JMS source
+  *
+  * @param consumerFactory  Implementation specific factory for building MessageConsumer.
+  *                         Use JndiMessageConsumerFactory to setup via JNDI
+  * @param messageConverter Function to map from Message type to T. Return None to filter out
+  *                         message
+  * @param storageLevel
+  * @tparam T
+  */
 abstract class BaseJmsReceiver[T](val consumerFactory: MessageConsumerFactory,
-  val messageConverter: (Message) => Option[T],
-  override val storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2)
+                                  val messageConverter: (Message) => Option[T],
+                                  override val storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2)
   extends Receiver[T](storageLevel) with Logging {
 
   @volatile
@@ -73,28 +73,28 @@ abstract class BaseJmsReceiver[T](val consumerFactory: MessageConsumerFactory,
 }
 
 /**
- * Reliable Receiver to use for a Jms provider that does not support an individual acknowledgment
- * mode.
- *
- * @param consumerFactory  Implementation specific factory for building MessageConsumer.
- *                         Use JndiMessageConsumerFactory to setup via JNDI
- * @param messageConverter Function to map from Message type to T. Return None to filter out
- *                         message
- * @param batchSize        How meany messages to read off JMS source before submitting to
- *                         streaming. Every batch is a new task so reasonably high to avoid
- *                         excessive task creation.
- * @param maxWait          Max time to wait for messages before submitting a batch to streaming.
- * @param maxBatchAge      Max age of a batch before it is submitting. Used to cater for the case
- *                         of a slow trickle of messages
- * @param storageLevel
- * @tparam T
- */
+  * Reliable Receiver to use for a Jms provider that does not support an individual acknowledgment
+  * mode.
+  *
+  * @param consumerFactory  Implementation specific factory for building MessageConsumer.
+  *                         Use JndiMessageConsumerFactory to setup via JNDI
+  * @param messageConverter Function to map from Message type to T. Return None to filter out
+  *                         message
+  * @param batchSize        How meany messages to read off JMS source before submitting to
+  *                         streaming. Every batch is a new task so reasonably high to avoid
+  *                         excessive task creation.
+  * @param maxWait          Max time to wait for messages before submitting a batch to streaming.
+  * @param maxBatchAge      Max age of a batch before it is submitting. Used to cater for the case
+  *                         of a slow trickle of messages
+  * @param storageLevel
+  * @tparam T
+  */
 class SynchronousJmsReceiver[T](override val consumerFactory: MessageConsumerFactory,
-  override val messageConverter: (Message) => Option[T],
-  val batchSize: Int = 10000,
-  val maxWait: Duration = 1.second,
-  val maxBatchAge: Duration = 1.seconds,
-  override val storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2)
+                                override val messageConverter: (Message) => Option[T],
+                                val batchSize: Int = 10000,
+                                val maxWait: Duration = 1.second,
+                                val maxBatchAge: Duration = 1.seconds,
+                                override val storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2)
   extends BaseJmsReceiver[T](consumerFactory, messageConverter, storageLevel) {
 
   override def onStart(): Unit = {
@@ -113,7 +113,7 @@ class SynchronousJmsReceiver[T](override val consumerFactory: MessageConsumerFac
             while (running) {
               if (buffer.size >= batchSize ||
                 stopWatch.elapsed(TimeUnit.MILLISECONDS) >=
-                maxBatchAge.toMillis) {
+                  maxBatchAge.toMillis) {
                 storeBuffer()
               }
               val message = if (maxWait.toMillis > 0) {
@@ -134,6 +134,7 @@ class SynchronousJmsReceiver[T](override val consumerFactory: MessageConsumerFac
               restart(e.getLocalizedMessage, e)
           }
         }
+
         def storeBuffer() = {
           if (buffer.nonEmpty) {
             store(buffer.flatMap(x => messageConverter(x)))
@@ -161,25 +162,25 @@ class SynchronousJmsReceiver[T](override val consumerFactory: MessageConsumerFac
 }
 
 /**
- * Jms receiver that support asynchronous acknowledgement. If used with an individual
- * acknowledgement mode can be considered "Reliable". Individual acknowledgement mode is not
- * currently part of JMS spec but is supported by some vendors such as ActiveMQ and
- * Solace
- *
- * @param consumerFactory     Implementation specific factory for building MessageConsumer.
- *                            Use JndiMessageConsumerFactory to setup via JNDI
- * @param messageConverter    Function to map from Message type to T. Return None to filter out
- *                            message
- * @param acknowledgementMode Should either be Session.AUTO_ACKNOWLEDGE or a JMS providers code
- *                            for individual acknowledgement. If set to Session.AUTO_ACKNOWLEDGE
- *                            then this receiver is not "Reliable"
- * @param storageLevel
- * @tparam T
- */
+  * Jms receiver that support asynchronous acknowledgement. If used with an individual
+  * acknowledgement mode can be considered "Reliable". Individual acknowledgement mode is not
+  * currently part of JMS spec but is supported by some vendors such as ActiveMQ and
+  * Solace
+  *
+  * @param consumerFactory     Implementation specific factory for building MessageConsumer.
+  *                            Use JndiMessageConsumerFactory to setup via JNDI
+  * @param messageConverter    Function to map from Message type to T. Return None to filter out
+  *                            message
+  * @param acknowledgementMode Should either be Session.AUTO_ACKNOWLEDGE or a JMS providers code
+  *                            for individual acknowledgement. If set to Session.AUTO_ACKNOWLEDGE
+  *                            then this receiver is not "Reliable"
+  * @param storageLevel
+  * @tparam T
+  */
 class AsynchronousJmsReceiver[T](override val consumerFactory: MessageConsumerFactory,
-  override val messageConverter: (Message) => Option[T],
-  val acknowledgementMode: Int = Session.AUTO_ACKNOWLEDGE,
-  override val storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2)
+                                 override val messageConverter: (Message) => Option[T],
+                                 val acknowledgementMode: Int = Session.AUTO_ACKNOWLEDGE,
+                                 override val storageLevel: StorageLevel = StorageLevel.MEMORY_AND_DISK_SER_2)
   extends BaseJmsReceiver[T](consumerFactory, messageConverter, storageLevel) {
   override def onStart(): Unit = {
     running = true
@@ -233,14 +234,12 @@ class AsynchronousJmsReceiver[T](override val consumerFactory: MessageConsumerFa
   }
 
 
-
-
 }
 
 /**
- * Implement to setup Jms consumer programmatically. Must serializable i.e. Don't put Jms object in
- * non transient fields.
- */
+  * Implement to setup Jms consumer programmatically. Must serializable i.e. Don't put Jms object in
+  * non transient fields.
+  */
 trait MessageConsumerFactory extends Serializable {
   @volatile
   @transient
@@ -270,17 +269,17 @@ trait MessageConsumerFactory extends Serializable {
   }
 
   /**
-   * Implement to make new connection
-   *
-   * @return
-   */
+    * Implement to make new connection
+    *
+    * @return
+    */
   def makeConnection: Connection
 
   /**
-   * Build new consumer
-   *
-   * @param session
-   * @return
-   */
+    * Build new consumer
+    *
+    * @param session
+    * @return
+    */
   def makeConsumer(session: Session): MessageConsumer
 }

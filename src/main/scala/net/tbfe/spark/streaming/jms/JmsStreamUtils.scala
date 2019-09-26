@@ -29,7 +29,6 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
 
-
 object JmsStreamUtils {
 
   /**
@@ -57,8 +56,8 @@ object JmsStreamUtils {
                                                    maxWait: Duration = 1.second,
                                                    maxBatchAge: Duration = 10.seconds,
                                                    storageLevel: StorageLevel =
-                                        StorageLevel.MEMORY_AND_DISK_SER_2
-                                       ): ReceiverInputDStream[T] = {
+                                                   StorageLevel.MEMORY_AND_DISK_SER_2
+                                                  ): ReceiverInputDStream[T] = {
 
     ssc.receiverStream(new SynchronousJmsReceiver[T](consumerFactory,
       messageConverter,
@@ -80,7 +79,7 @@ object JmsStreamUtils {
     * @param messageConverter    Function to map from Message type to T. Return None to filter out
     *                            message
     * @param acknowledgementMode Should either be Session.AUTO_ACKNOWLEDGE or a JMS providers code
-∏    *                            for individual acknowledgement. If set to Session.AUTO_ACKNOWLEDGE
+    *                            ∏    *                            for individual acknowledgement. If set to Session.AUTO_ACKNOWLEDGE
     *                            then this receiver is not "Reliable"
     * @param storageLevel
     * @tparam T
@@ -121,23 +120,22 @@ case class QueueJmsDestinationInfo(queueName: String) extends JmsDestinationInfo
   * @param subscriptionName
   */
 case class DurableTopicJmsDestinationInfo(topicName: String,
-  subscriptionName: String) extends JmsDestinationInfo
-
+                                          subscriptionName: String) extends JmsDestinationInfo
 
 
 /**
- * Build Jms objects from JNDI
- *
- * @param jndiProperties        Implementation specific. JNDI properties with setup for connection
- *                              factory and destinations.
- * @param destinationInfo       Queue or Topic destination info.
- * @param connectionFactoryName Name of connection factory connfigured in JNDI
- * @param messageSelector       Message selector. Use Empty string for no message filter.
- */
+  * Build Jms objects from JNDI
+  *
+  * @param jndiProperties        Implementation specific. JNDI properties with setup for connection
+  *                              factory and destinations.
+  * @param destinationInfo       Queue or Topic destination info.
+  * @param connectionFactoryName Name of connection factory connfigured in JNDI
+  * @param messageSelector       Message selector. Use Empty string for no message filter.
+  */
 case class JndiMessageConsumerFactory(jndiProperties: Properties,
-  destinationInfo: JmsDestinationInfo,
-  connectionFactoryName: String = "ConnectionFactory",
-  messageSelector: String = "")
+                                      destinationInfo: JmsDestinationInfo,
+                                      connectionFactoryName: String = "ConnectionFactory",
+                                      messageSelector: String = "")
   extends MessageConsumerFactory with Logging {
 
   @volatile

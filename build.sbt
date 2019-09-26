@@ -24,7 +24,8 @@ spAppendScalaVersion := true
 libraryDependencies ++= Seq(
   "javax.jms" % "jms-api" % "1.1-rev-1",
   "org.apache.activemq" % "activemq-core" % "5.7.0" % "test",
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test"
+  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+  "com.ibm.mq" % "com.ibm.mq.allclient" % "9.1.1.0"
 )
 
 
@@ -39,3 +40,15 @@ unmanagedJars in Compile ++= {
     customJars.classpath
 }
 */
+
+assemblyJarName := "ibm-dependency.jar"
+
+val meta = """META.INF(.)*""".r
+assemblyMergeStrategy in assembly := {
+  case PathList("javax", "servlet", xs @ _*) => MergeStrategy.first
+  case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
+  case n if n.startsWith("reference.conf") => MergeStrategy.concat
+  case n if n.endsWith(".conf") => MergeStrategy.concat
+  case meta(_) => MergeStrategy.discard
+  case x => MergeStrategy.first
+}
