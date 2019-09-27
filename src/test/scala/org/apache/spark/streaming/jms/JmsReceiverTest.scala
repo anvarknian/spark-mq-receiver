@@ -1,34 +1,37 @@
- /* Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package org.apache.spark.streaming.jms
+
+/* Licensed to the Apache Software Foundation (ASF) under one or more
+* contributor license agreements.  See the NOTICE file distributed with
+* this work for additional information regarding copyright ownership.
+* The ASF licenses this file to You under the Apache License, Version 2.0
+* (the "License"); you may not use this file except in compliance with
+* the License.  You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 import java.net.ServerSocket
 import java.util.{Properties, UUID}
+
 import javax.jms._
 import javax.naming.{Context, InitialContext}
-import net.tbfe.spark.streaming.jms._
-import org.apache.activemq.{ActiveMQConnectionFactory, ActiveMQSession}
+import net.tbfe.spark.streaming.jms.{DurableTopicJmsDestinationInfo, JmsDestinationInfo, JmsStreamUtils, JndiMessageConsumerFactory, QueueJmsDestinationInfo}
+import net.tbfe.spark.streaming.jms.{DurableTopicJmsDestinationInfo, JmsDestinationInfo, JndiMessageConsumerFactory, QueueJmsDestinationInfo}
 import org.apache.activemq.broker.BrokerService
+import org.apache.activemq.{ActiveMQConnectionFactory, ActiveMQSession}
 import org.apache.commons.lang3.RandomUtils
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Milliseconds, StreamingContext}
 import org.apache.spark.util.Utils
-import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.scalatest.concurrent.Eventually
+import org.scalatest.{BeforeAndAfter, FunSuite}
+
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration
 import scala.language.postfixOps
@@ -129,8 +132,6 @@ class JmsReceiverTest extends FunSuite with BeforeAndAfter with Eventually {
   }
 
 
-
-
   test("stop and start sync") {
     testStopStart(false)
 
@@ -141,7 +142,7 @@ class JmsReceiverTest extends FunSuite with BeforeAndAfter with Eventually {
 
   }
 
-  def testStopStart(sync: Boolean) :Unit =  {
+  def testStopStart(sync: Boolean): Unit = {
 
     val destName: String = "dynamicQueues/FOOO.BARR"
     val props = new Properties()
@@ -158,7 +159,6 @@ class JmsReceiverTest extends FunSuite with BeforeAndAfter with Eventually {
       case _ =>
         None
     }
-
 
 
     val stream = if (sync) {
@@ -310,8 +310,6 @@ class JmsReceiverTest extends FunSuite with BeforeAndAfter with Eventually {
       (null, trialPort)
     }, new SparkConf())._2
   }
-
-
 
 
 }
